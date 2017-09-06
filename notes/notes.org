@@ -1,0 +1,78 @@
+;; This buffer is for text that is not saved, and for Lisp evaluation.
+;; To create a file, visit it with C-x C-f and enter text in its buffer.
+
+* Trip data
+Trip data was collected for each household member during the retrieval
+interview. This data is the primary source of information to support
+the data needs of the travel demand model and analysis in mode choice,
+origin-destination patterns, and transportation facility use. Trip
+data collected included the following:
+** An anchor point
+For the start of the day and to provide the origin information for the
+first trip of the 24-hour period (pinpointing the location of each
+household member at 3 am).
+** Geocoded address information
+for each location visited throughout the 24-hour period
+** Trip start and end times,
+** Travel party size and composition
+** Travel mode
+*** If personal auto was used, an indication of which household vehicle was used
+*** If personal auto was used, parking information
+*** If transit was used, the number of transfers made, the bus fare, and bus pass information.
+*** For non-auto trips, the respondent perspective of parking costs (to determine if that had an influence on mode choice)
+** Respondent perspective of alternative modes available
+** Activity at place (trip purpose), and
+** Summary variables to provide trip and activity duration.
+
+1) Household Data - Core household characteristics included the following:
+ Geocoded household address,
+ Household size,
+ Household vehicle ownership,
+ Household bicycle ownership,
+ Household income,
+ Household ethnicity
+ Residence type,
+ Owner/ renter status,
+ Details regarding length of tenure, and if less than 2 years at current location, prior home location,
+reasons for moving, and factors influencing current home location
+ Indication of whether the household members use transit regularly or walks/bike to work/school,
+ Indication of whether the household belongs to a flex car program
+ Day and date of travel, and
+ Summary variables that indicated the number of trips made by household members, the number of
+workers and students, and the number of licensed drivers in the household.
+
+2) Person Data – Demographic information was collected for all household members to help explain the
+impact of household dynamics on personal travel in the region. The person-level variables are:
+ Age and gender of all household members,
+ Relationship among household members,
+ Disability status,
+ Licensed Driver status (age 16+),
+ Transit pass ownership (age 16+)
+ Employment status (age 16+) or categorization of primary activity if not employed,
+ If employed: Geocoded work address, occupation and industry, # hours worked per week, typical
+mode to work, telecommuting, whether the employer of the respondent provided transit pass and/or
+parking,
+ Level of education attainment,
+ Student status,
+ If student: Geocoded school address, typical mode to school, type of school attended and if college
+student, whether student has a school parking pass,
+ A summary of the number of trips recorded or an explanation for non-travel if applicable.
+ Details regarding the type of interview, the use of the diary, and whether the day was typical for the
+respondent.
+
+* Vehicle data
+The recruitment instrument included questions about the vehicles
+available to the household:
+** Year,
+** Make,
+** Model,
+** Body,
+** Fuel type,
+** Ownership status,
+** Service history,
+** Use of vehicle for commercial purposes
+** Rotating fleet questions
+(asked of 20% of respondent households) including, year of vehicle
+acquisition, cost, and reasoning behind acquisition, and vehicle
+disposition if vehicle was “retired”.  whether vehicle was used on
+travel day and an explanation for non-use if applicable.
