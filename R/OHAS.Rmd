@@ -1,0 +1,74 @@
+# 2014? Oregon Household Activity Survey (OHAS)
+
+```{r build, eval = TRUE, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
+build <- FALSE
+```
+
+```{r data, eval = build, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
+TRIP <- read.table(file = "./../data/OHAS/2014-04-24/TRIP.csv", sep = ",", header = TRUE, row.names = 1)
+PLACE <- read.table(file = "./../data/OHAS/2014-04-24/PLACE.csv", sep = ",", header = TRUE, row.names = 1)
+HH <- read.table(file = "./../data/OHAS/2014-04-24/HH.csv", sep = ",", header = TRUE, row.names = 1)
+PER <- read.table(file = "./../data/OHAS/2014-04-24/PER.csv", sep = ",", header = TRUE, row.names = 1)
+ACTIVITY <- read.table(file = "./../data/OHAS/2014-04-24/ACTIVITY.csv", sep = ",", header = TRUE, row.names = 1)
+LINKEDTRIP <- read.table(file = "./../data/OHAS/2014-04-24/LINKEDTRIP.csv", sep = ",", header = TRUE, row.names = 1)
+LINKEDTRIP_PM<- read.table(file = "./../data/OHAS/2014-04-24/LINKEDTRIP_PM.csv", sep = ",", header = TRUE, row.names = 1)
+TOUR <- read.table(file = "./../data/OHAS/2014-04-24/TOUR.csv", sep = ",", header = TRUE, row.names = 1)
+VEH <- read.table(file = "./../data/OHAS/2014-04-24/VEH.csv", sep = ",", header = TRUE, row.names = 1)
+VEHRET <- read.table(file = "./../data/OHAS/2014-04-24/VEHRET.csv", sep = ",", header = TRUE, row.names = 1)
+```
+
+```{r PLACE, eval = build, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
+PLACE <- within(PLACE,{
+    MODE <- factor(MODE)
+})
+```
+
+```{r TRIP, eval = build, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
+TRIP <- within(TRIP,{
+    MODE <- factor(MODE)
+})
+```
+
+```{r HH, eval = build, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
+HH <- within(HH,{
+    INCOME <- factor(INCOME)
+    AREA <- factor(AREA)
+})
+```
+
+```{r OHAS, eval = build, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
+OHAS <- list(
+    PLACE = PLACE,
+    HH = HH,
+    PER = PER,
+    VEH = VEH,
+    VEHRET = VEHRET,
+    ACTIVITY = ACTIVITY,
+    TRIP = TRIP,
+    TOUR = TOUR,
+    LINKEDTRIP = LINKEDTRIP,
+    LINKEDTRIP_PM= LINKEDTRIP_PM
+)
+
+saveRDS(OHAS, file = "./../data/OHAS/OHAS.rds")
+```
+
+```{r load, eval = !build, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
+OHAS <- readRDS("./../data/OHAS/OHAS.rds")
+```
+
+The OHAS data came with four tables (ACTIVITY, TRIP, TOUR, LINKEDTRIP)
+that were created with script _createTourTable.R_ written by Ben
+Stabler and Joel Freedman.
+
+```{r , eval = TRUE, echo = TRUE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
+summary(OHAS$HH$INCOME)
+```
+
+```{r dim, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
+lapply(OHAS, dim)
+```
+
+```{r summary, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
+lapply(OHAS, summary)
+```
