@@ -1,10 +1,11 @@
-# 2014? Oregon Household Activity Survey (OHAS)
+# Oregon Household Activity Survey (OHAS, 2009-2011)
 
-```{r build, eval = TRUE, echo = FALSE, results = "hide"}
+```{r build, eval = TRUE, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
+library("ITHIM")
 build <- FALSE
 ```
 
-```{r data, eval = build, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
+```{r data, eval = build, echo = FALSE, results = "hide", warning = TRUE, error = TRUE, message = TRUE}
 TRIP <- read.table(file = "./../data/OHAS/2014-04-24/TRIP.csv", sep = ",", header = TRUE, row.names = 1)
 PLACE <- read.table(file = "./../data/OHAS/2014-04-24/PLACE.csv", sep = ",", header = TRUE, row.names = 1)
 HH <- read.table(file = "./../data/OHAS/2014-04-24/HH.csv", sep = ",", header = TRUE, row.names = 1)
@@ -19,7 +20,17 @@ VEHRET <- read.table(file = "./../data/OHAS/2014-04-24/VEHRET.csv", sep = ",", h
 
 ```{r PLACE, eval = build, echo = FALSE, results = "hide"}
 PLACE <- within(PLACE,{
-    MODE <- factor(MODE)
+    MODE <- factor(MODE, levels = c(1:9,97), labels = c("walk","bike","auto driver","auto passenger","transit","dial-a-ride/paratransit","taxi","school bus","carpool","other"))
+})
+```
+
+```{r PER, eval = build, echo = FALSE, results = "hide"}
+PER <- within(PER,{
+    WMODE <- ifelse(WMODE %in% c(97,98,99), NA, WMODE)
+    WMODE <- factor(WMODE)
+    AGE <- ifelse(AGE == 99, NA, AGE)
+    GEND <- ifelse(GEND == 9, NA, GEND)
+    GEND <- factor(GEND, levels = c(1,2), labels = c("M","F"))
 })
 ```
 
@@ -65,18 +76,44 @@ written by Ben Stabler and Joel Freedman.  Presumably, the tables
 _LINKEDTRIP_PM_ and _VEHRET_ are also tables created from the original
 survey data.  I believe _PLACE_, _HH_, _PER_ and _VEH_ are the
 original four tables.  Eric, Brendon, Kelly, please correct me if I am
-wrong.
+wrong.  I join three of these tables (_PLACE_, _HH_ and _PER_) to
+create the working OHAS data frame _OHAS.df_.
 
-### Household Table
-#### AREA, INCOME & RACE
-```{r table, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
-with(OHAS$HH,table(AREA))
-with(OHAS$HH,table(INCOME))
-with(OHAS$HH,table(RACE))
-with(OHAS$HH,table(AREA,RACE, INCOME))
+```{r join, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
+OHAS.df <- with(OHAS,{
+    full_join(HH,PER,by="SAMPN", suffix = c(".HH",".PER"))
+})
+
+OHAS.df <- with(OHAS,{
+    full_join(PLACE,OHAS.df,by=c("SAMPN","PERNO"), suffix = c(".PLACE",".OHAS"))
+})
 ```
 
-### Dimensions
+## Mean Walk/Bike Duration by County
+Per person mean walk and bike times by county.
+```{r totaldur, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
+D <- OHAS.df %>% filter(MODE %in% c("walk","bike")) %>% group_by(MODE,CTFIP) %>% summarise(TOTDUR = sum(TRPDUR)) %>% arrange(CTFIP,MODE)
+D2 <- OHAS.df %>% group_by(CTFIP) %>% summarise(n = n_distinct(paste0(SAMPN,PERNO)))
+full_join(D,D2,by="CTFIP") %>% mutate(mean = TOTDUR/n) %>% arrange(MODE,desc(mean)) %>% as.data.frame()
+```
+
+## Age Class $\times$ Sex $\times$ County
+```{r pertable, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
+AGECLASS <- ITHIM:::convertToAgeClass(OHAS.df$AGE)
+table(AGECLASS, OHAS.df$GEND, OHAS.df$CTFIP)
+```
+
+## Household Table (HH)
+### CTFIP, INCOME & RACE
+```{r hhtable, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
+with(OHAS$HH,table(CTFIP))
+with(OHAS$HH,table(INCOME))
+with(OHAS$HH,table(RACE))
+with(OHAS$HH,table(INCOME,RACE,CTFIP))
+```
+
+
+## All Tables Dimensions
 ```{r dim, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
 lapply(OHAS, dim)
 ```
