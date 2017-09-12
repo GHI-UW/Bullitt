@@ -41,9 +41,12 @@ TRIP <- within(TRIP,{
 ```
 
 ```{r HH, eval = build, echo = FALSE, results = "hide"}
+countyNames <- readRDS(file="./../data/R/countyNames.rds")
+
 HH <- within(HH,{
     INCOME <- factor(INCOME)
     AREA <- factor(AREA)
+    COUNTYNAME <- factor(CTFIP, labels = countyNames$CountyName, levels = countyNames$CountyID)
 })
 ```
 
@@ -92,24 +95,24 @@ OHAS.df <- with(OHAS,{
 ## Mean Walk/Bike Duration by County
 Per person mean walk and bike times by county.
 ```{r totaldur, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
-D <- OHAS.df %>% filter(MODE %in% c("walk","bike")) %>% group_by(MODE,CTFIP) %>% summarise(TOTDUR = sum(TRPDUR)) %>% arrange(CTFIP,MODE)
-D2 <- OHAS.df %>% group_by(CTFIP) %>% summarise(n = n_distinct(paste0(SAMPN,PERNO)))
-full_join(D,D2,by="CTFIP") %>% mutate(mean = TOTDUR/n) %>% arrange(MODE,desc(mean)) %>% as.data.frame()
+D <- OHAS.df %>% filter(MODE %in% c("walk","bike")) %>% group_by(MODE,COUNTYNAME) %>% summarise(TOTDUR = sum(TRPDUR)) %>% arrange(COUNTYNAME,MODE)
+D2 <- OHAS.df %>% group_by(COUNTYNAME) %>% summarise(n = n_distinct(paste0(SAMPN,PERNO)))
+full_join(D,D2,by="COUNTYNAME") %>% mutate(mean = TOTDUR/n) %>% arrange(MODE,desc(mean)) %>% as.data.frame()
 ```
 
 ## Age Class $\times$ Sex $\times$ County
 ```{r pertable, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
 AGECLASS <- ITHIM:::convertToAgeClass(OHAS.df$AGE)
-table(AGECLASS, OHAS.df$GEND, OHAS.df$CTFIP)
+table(AGECLASS, OHAS.df$GEND, OHAS.df$COUNTYNAME)
 ```
 
 ## Household Table (HH)
-### CTFIP, INCOME & RACE
+### COUNTYNAME, INCOME & RACE
 ```{r hhtable, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
-with(OHAS$HH,table(CTFIP))
+with(OHAS$HH,table(COUNTYNAME))
 with(OHAS$HH,table(INCOME))
 with(OHAS$HH,table(RACE))
-with(OHAS$HH,table(INCOME,RACE,CTFIP))
+with(OHAS$HH,table(INCOME,RACE,COUNTYNAME))
 ```
 
 
