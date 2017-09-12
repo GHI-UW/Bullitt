@@ -47,6 +47,7 @@ HH <- within(HH,{
     INCOME <- factor(INCOME)
     AREA <- factor(AREA)
     COUNTYNAME <- factor(CTFIP, labels = countyNames$CountyName, levels = countyNames$CountyID)
+    RACE <- factor(RACE)
 })
 ```
 
@@ -90,9 +91,15 @@ OHAS.df <- with(OHAS,{
 OHAS.df <- with(OHAS,{
     full_join(PLACE,OHAS.df,by=c("SAMPN","PERNO"), suffix = c(".PLACE",".OHAS"))
 })
+
+OHAS.df <- OHAS.df %>% filter(COUNTYNAME %in% c("Multnomah","Washington","Clackamas","Columbia","Yamhill"))
+OHAS.df <- within(OHAS.df, COUNTYNAME <- factor(COUNTYNAME, levels = c("Multnomah","Washington","Clackamas","Columbia","Yamhill")))
+OHAS.df <- filter(OHAS.df, !is.na(GEND))
 ```
 
-## Mean Walk/Bike Duration by County
+<img src="https://www.digital-topo-maps.com/county-map/oregon-county-map.gif"><br>Map Courtesy of <a href="https://www.digital-topo-maps.com/county-map/oregon.shtml">Digital-Topo-Maps.com</a>
+
+## Mean Walk/Bike Duration by Five Counties
 Per person mean walk and bike times by county.
 ```{r totaldur, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
 D <- OHAS.df %>% filter(MODE %in% c("walk","bike")) %>% group_by(MODE,COUNTYNAME) %>% summarise(TOTDUR = sum(TRPDUR)) %>% arrange(COUNTYNAME,MODE)
@@ -100,23 +107,25 @@ D2 <- OHAS.df %>% group_by(COUNTYNAME) %>% summarise(n = n_distinct(paste0(SAMPN
 full_join(D,D2,by="COUNTYNAME") %>% mutate(mean = TOTDUR/n) %>% arrange(MODE,desc(mean)) %>% as.data.frame()
 ```
 
-## Age Class $\times$ Sex $\times$ County
+## AgeClass by Sex by Five Counties
 ```{r pertable, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
 AGECLASS <- ITHIM:::convertToAgeClass(OHAS.df$AGE)
-table(AGECLASS, OHAS.df$GEND, OHAS.df$COUNTYNAME)
+```
+
+```{r sampSize, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
+D <- data.frame(GEND = OHAS.df$GEND, AGECLASS = AGECLASS, COUNTYNAME = OHAS.df$COUNTYNAME, INCOME = OHAS.df$INCOME, RACE = OHAS.df$RACE)
+ggplot(D, aes(x = AGECLASS, fill = GEND)) + geom_bar(position = "dodge") + facet_grid(COUNTYNAME ~ .)
+ggplot(D, aes(x = INCOME, fill = COUNTYNAME)) + geom_bar(position = "dodge")
 ```
 
 ## Household Table (HH)
 ### COUNTYNAME, INCOME & RACE
 ```{r hhtable, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
-with(OHAS$HH,table(COUNTYNAME))
-with(OHAS$HH,table(INCOME))
-with(OHAS$HH,table(RACE))
-with(OHAS$HH,table(INCOME,RACE,COUNTYNAME))
+with(OHAS.df,table(INCOME,RACE,COUNTYNAME))
 ```
 
-
-## All Tables Dimensions
+## Appendix
+### All Tables Dimensions
 ```{r dim, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
 lapply(OHAS, dim)
 ```
