@@ -92,8 +92,9 @@ OHAS.df <- with(OHAS,{
     full_join(PLACE,OHAS.df,by=c("SAMPN","PERNO"), suffix = c(".PLACE",".OHAS"))
 })
 
-OHAS.df <- OHAS.df %>% filter(COUNTYNAME %in% c("Multnomah","Washington","Clackamas","Columbia","Yamhill"))
-OHAS.df <- within(OHAS.df, COUNTYNAME <- factor(COUNTYNAME, levels = c("Multnomah","Washington","Clackamas","Columbia","Yamhill")))
+OHAS.df <- OHAS.df %>% filter(COUNTYNAME %in% c("Benton","Clackamas","Columbia","Deschutes","Jackson","Josephine","Lane","Linn","Marion","Multnomah","Polk","Washington"))
+
+OHAS.df <- within(OHAS.df, COUNTYNAME <- factor(COUNTYNAME, levels = c("Benton","Clackamas","Columbia","Deschutes","Jackson","Josephine","Lane","Linn","Marion","Multnomah","Polk","Washington")))
 OHAS.df <- filter(OHAS.df, !is.na(GEND))
 ```
 
