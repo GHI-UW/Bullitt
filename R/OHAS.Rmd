@@ -1,4 +1,4 @@
-# Oregon Household Activity Survey (OHAS, 2009-2011)
+# Oregon Household Activity Survey (OHAS)
 
 ```{r build, eval = TRUE, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
 library("ITHIM")
@@ -20,7 +20,7 @@ VEHRET <- read.table(file = "./../data/OHAS/2014-04-24/VEHRET.csv", sep = ",", h
 
 ```{r PLACE, eval = build, echo = FALSE, results = "hide"}
 PLACE <- within(PLACE,{
-    MODE <- factor(MODE, levels = c(1:9,97), labels = c("walk","bike","auto driver","auto passenger","transit","dial-a-ride/paratransit","taxi","school bus","carpool","other"))
+    MODE <- factor(MODE, levels = c(1:9,97), labels = c("walk","cycle","auto driver","auto passenger","transit","dial-a-ride/paratransit","taxi","school bus","carpool","other"))
 })
 ```
 
@@ -85,25 +85,34 @@ create the working OHAS data frame _OHAS.df_.
 
 ```{r join, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
 OHAS.df <- with(OHAS,{
-    full_join(HH,PER,by="SAMPN", suffix = c(".HH",".PER"))
+    HHPER <- full_join(HH,PER,by="SAMPN", suffix = c(".HH",".PER"))
+    full_join(PLACE,HHPER,by=c("SAMPN","PERNO"), suffix = c(".PLACE",".HHPER"))
 })
 
-OHAS.df <- with(OHAS,{
-    full_join(PLACE,OHAS.df,by=c("SAMPN","PERNO"), suffix = c(".PLACE",".OHAS"))
-})
+countyList <- c("Benton","Clackamas","Deschutes","Jackson","Lane","Marion","Multnomah","Washington")
 
-OHAS.df <- OHAS.df %>% filter(COUNTYNAME %in% c("Benton","Clackamas","Columbia","Deschutes","Jackson","Josephine","Lane","Linn","Marion","Multnomah","Polk","Washington"))
-
-OHAS.df <- within(OHAS.df, COUNTYNAME <- factor(COUNTYNAME, levels = c("Benton","Clackamas","Columbia","Deschutes","Jackson","Josephine","Lane","Linn","Marion","Multnomah","Polk","Washington")))
+OHAS.df <- OHAS.df %>% filter(COUNTYNAME %in% countyList)
+OHAS.df <- within(OHAS.df, COUNTYNAME <- factor(COUNTYNAME, levels = countyList))
 OHAS.df <- filter(OHAS.df, !is.na(GEND))
+OHAS.df <- filter(OHAS.df, !is.na(AGE))
+```
+## Mean Walk/Cycle Duration (Eight Counties Combined)
+
+We include eight counties: `r countyList`.
+
+```{r allCounties, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
+D <- full_join(
+  OHAS.df %>% mutate(AGECLASS = ITHIM:::convertToAgeClass(AGE)) %>% group_by(MODE,GEND,AGECLASS) %>% summarise(TOTDUR = sum(TRPDUR)) %>% filter(MODE %in% c("walk","cycle")) %>% arrange(MODE, GEND, AGECLASS),
+  OHAS.df %>% mutate(AGECLASS = ITHIM:::convertToAgeClass(AGE)) %>% group_by(GEND,AGECLASS) %>% summarise(N=n_distinct(paste0(SAMPN,PERNO))), by = c("GEND","AGECLASS")
+) %>% mutate(MEAN = TOTDUR/N)
+
+ggplot(D, aes(x = AGECLASS, y = MEAN, fill = GEND)) + geom_bar(position = "dodge", stat = "identity") + xlab("Age Class") + ylab("Mean Individual Travel Duration (min./week)") + facet_grid(MODE ~ .)
 ```
 
-<img src="https://www.digital-topo-maps.com/county-map/oregon-county-map.gif"><br>Map Courtesy of <a href="https://www.digital-topo-maps.com/county-map/oregon.shtml">Digital-Topo-Maps.com</a>
-
-## Mean Walk/Bike Duration by Five Counties
+## Mean Walk/Bike Duration by County
 Per person mean walk and bike times by county.
 ```{r totaldur, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
-D <- OHAS.df %>% filter(MODE %in% c("walk","bike")) %>% group_by(MODE,COUNTYNAME) %>% summarise(TOTDUR = sum(TRPDUR)) %>% arrange(COUNTYNAME,MODE)
+D <- OHAS.df %>% filter(MODE %in% c("walk","cycle")) %>% group_by(MODE,COUNTYNAME) %>% summarise(TOTDUR = sum(TRPDUR)) %>% arrange(COUNTYNAME,MODE)
 D2 <- OHAS.df %>% group_by(COUNTYNAME) %>% summarise(n = n_distinct(paste0(SAMPN,PERNO)))
 full_join(D,D2,by="COUNTYNAME") %>% mutate(mean = TOTDUR/n) %>% arrange(MODE,desc(mean)) %>% as.data.frame()
 ```
@@ -126,6 +135,7 @@ with(OHAS.df,table(INCOME,RACE,COUNTYNAME))
 ```
 
 ## Appendix
+<img src="https://www.digital-topo-maps.com/county-map/oregon-county-map.gif"><br>Map Courtesy of <a href="https://www.digital-topo-maps.com/county-map/oregon.shtml">Digital-Topo-Maps.com</a>
 ### All Tables Dimensions
 ```{r dim, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
 lapply(OHAS, dim)
