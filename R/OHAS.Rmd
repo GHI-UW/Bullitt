@@ -95,6 +95,7 @@ OHAS.df <- OHAS.df %>% filter(COUNTYNAME %in% countyList)
 OHAS.df <- within(OHAS.df, COUNTYNAME <- factor(COUNTYNAME, levels = countyList))
 OHAS.df <- filter(OHAS.df, !is.na(GEND))
 OHAS.df <- filter(OHAS.df, !is.na(AGE))
+saveRDS(OHAS.df, file = "./../data/OHAS/OHAS.df.rds")
 ```
 ## Mean Walk/Cycle Duration (Eight Counties Combined)
 
