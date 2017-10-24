@@ -2,7 +2,7 @@
 
 ```{r build, eval = TRUE, echo = FALSE, results = "hide", warning = FALSE, error = FALSE, message = FALSE}
 library("ITHIM")
-build <- FALSE
+build <- TRUE
 ```
 
 ```{r data, eval = build, echo = FALSE, results = "hide", warning = TRUE, error = TRUE, message = TRUE}
@@ -21,6 +21,7 @@ VEHRET <- read.table(file = "./../data/OHAS/2014-04-24/VEHRET.csv", sep = ",", h
 ```{r PLACE, eval = build, echo = FALSE, results = "hide"}
 PLACE <- within(PLACE,{
     MODE <- factor(MODE, levels = c(1:9,97), labels = c("walk","cycle","auto driver","auto passenger","transit","dial-a-ride/paratransit","taxi","school bus","carpool","other"))
+    TPURP <- factor(TPURP, levels = c(1:22, 96, 97))
 })
 ```
 
@@ -89,17 +90,11 @@ OHAS.df <- with(OHAS,{
     full_join(PLACE,HHPER,by=c("SAMPN","PERNO"), suffix = c(".PLACE",".HHPER"))
 })
 
-countyList <- c("Benton","Clackamas","Deschutes","Jackson","Lane","Marion","Multnomah","Washington")
-
-OHAS.df <- OHAS.df %>% filter(COUNTYNAME %in% countyList)
-OHAS.df <- within(OHAS.df, COUNTYNAME <- factor(COUNTYNAME, levels = countyList))
 OHAS.df <- filter(OHAS.df, !is.na(GEND))
 OHAS.df <- filter(OHAS.df, !is.na(AGE))
 saveRDS(OHAS.df, file = "./../data/OHAS/OHAS.df.rds")
 ```
 ## Mean Walk/Cycle Duration (Eight Counties Combined)
-
-We include eight counties: `r countyList`.
 
 ```{r allCounties, eval = TRUE, echo = FALSE, results = "show", warning = TRUE, error = TRUE, message = TRUE}
 D <- full_join(
